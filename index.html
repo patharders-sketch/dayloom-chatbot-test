@@ -79,9 +79,9 @@ function reply(q){const raw=q.trim();if(!raw)return null;const nq=norm(raw);
  if(!r)return {topic:'FALLBACK',text:"I'm not sure about that one, and I'd rather not guess. Patrick's team can answer it directly: call 703-636-5225 (Mon–Fri, 8–5 ET) or request a free design consult on dayloom.com. I can also help with costs, the process, service area or fixtures."};
  return {topic:r.t,text:r.a,source:r.src||(entries.find(e=>e.title==r.t)||{}).source||''};}
 function retrieve(q){const r=reply(q);return r&&r.topic!='FALLBACK'?{title:r.topic,answer:r.text,source:r.source}:null}
-const BACKEND=window.DAYLOOM_CHAT_URL||'https://dayloom-chat.dayloom-chat.workers.dev';let convo=[];
+const BACKEND=window.DAYLOOM_CHAT_URL||'https://dayloom-chat.dayloom-chat.workers.dev';let convo=[];const SID=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(36).slice(2));
 async function ask(q){if(!q.trim())return;bubble(q,true);convo.push({role:'user',content:q});const wait=document.createElement('div');wait.className='bubble';wait.textContent='…';$('messages').append(wait);
-try{const r=await fetch(BACKEND+'/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:convo.slice(-24)})});const j=await r.json();if(j.error)throw new Error('backend');wait.remove();const t=j.reply||"Sorry, please call Dayloom at 703-636-5225.";convo.push({role:'assistant',content:t});bubble(t);
+try{const r=await fetch(BACKEND+'/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:convo.slice(-24),sessionId:SID})});const j=await r.json();if(j.error)throw new Error('backend');wait.remove();const t=j.reply||"Sorry, please call Dayloom at 703-636-5225.";convo.push({role:'assistant',content:t});bubble(t);
 if(j.lead){$('json').textContent=j.lead.endpoint+'\n'+JSON.stringify(j.lead.payload,null,2);$('leadresult').hidden=false;bubble('Test preview: the lead JSON that would go to ServiceMinder is in the "Try a project inquiry" tab. Nothing was sent.')}}
 catch(e){wait.remove();convo.pop();bubble("Sorry, I'm having trouble connecting right now. Please call Dayloom at 703-636-5225 (Mon–Fri, 8–5 ET) or request a free design on dayloom.com.")}}
 
