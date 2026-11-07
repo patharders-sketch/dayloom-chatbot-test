@@ -81,9 +81,9 @@ function reply(q){const raw=q.trim();if(!raw)return null;const nq=norm(raw);
 function retrieve(q){const r=reply(q);return r&&r.topic!='FALLBACK'?{title:r.topic,answer:r.text,source:r.source}:null}
 const BACKEND=window.DAYLOOM_CHAT_URL||'https://dayloom-chat.dayloom-chat.workers.dev';let convo=[];
 async function ask(q){if(!q.trim())return;bubble(q,true);convo.push({role:'user',content:q});const wait=document.createElement('div');wait.className='bubble';wait.textContent='…';$('messages').append(wait);
-try{const r=await fetch(BACKEND+'/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:convo.slice(-24)})});const j=await r.json();wait.remove();const t=j.reply||"Sorry, please call Dayloom at 703-636-5225.";convo.push({role:'assistant',content:t});bubble(t);
+try{const r=await fetch(BACKEND+'/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:convo.slice(-24)})});const j=await r.json();if(j.error)throw new Error('backend');wait.remove();const t=j.reply||"Sorry, please call Dayloom at 703-636-5225.";convo.push({role:'assistant',content:t});bubble(t);
 if(j.lead){$('json').textContent=j.lead.endpoint+'\n'+JSON.stringify(j.lead.payload,null,2);$('leadresult').hidden=false;bubble('Test preview: the lead JSON that would go to ServiceMinder is in the "Try a project inquiry" tab. Nothing was sent.')}}
-catch(e){wait.remove();const r=reply(q);bubble(r.text+' (offline mode)',false,r.source)}}
+catch(e){wait.remove();convo.pop();const r=reply(q);bubble(r.text+' (offline mode)',false,r.source)}}
 
 
 
